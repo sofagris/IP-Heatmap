@@ -56,11 +56,11 @@ This project introduces a generic /log endpoint that processes logs based on a s
 
 #### The following log categories are supported:
 
-    - Firewall Logs
-    - NGINX Logs
-    - Postfix Logs
-    - SSH Auth Logs
-    - HTTPD Logs
+- Firewall Logs
+- NGINX Logs
+- Postfix Logs
+- SSH Auth Logs
+- HTTPD Logs
 
 ### Generic Log Endpoint
 
@@ -133,22 +133,22 @@ await notify_clients(connection_info)
 
 ### Extensibility
 
-    This project is designed to be extensible. If you want to add support for new log categories, simply:
+This project is designed to be extensible. If you want to add support for new log categories, simply:
 
-    1. Define a new Pydantic model for the log category.
-    2. Add the model to the log_model_map.
-    3. Update the MongoDB collection map to store the new log category in a different collection.
+1. Define a new Pydantic model for the log category.
+2. Add the model to the log_model_map.
+3. Update the MongoDB collection map to store the new log category in a different collection.
 
 ### Future Enhancements
 
-    - CRUD operations: To fully support create, read, update, and delete (CRUD) operations for MongoDB collections, additional routes can be created for each log category.
-    - Separate Routers: The current project is a working proof of concept but should eventually separate log categories into their own routers.
-    - Advanced Reporting and Analysis: Adding support for more detailed reporting and analysis tools, such as graphical visualizations of logs.
+- CRUD operations: To fully support create, read, update, and delete (CRUD) operations for MongoDB collections, additional routes can be created for each log category.
+- Separate Routers: The current project is a working proof of concept but should eventually separate log categories into their own routers.
+- Advanced Reporting and Analysis: Adding support for more detailed reporting and analysis tools, such as graphical visualizations of logs.
 
 ### Real-World Use Case
 
-    While this project is designed to process server logs for cybersecurity purposes, the same methods can be applied to e-commerce platforms for visualizing customer activity, identifying popular regions, and analyzing buying trends.
+While this project is designed to process server logs for cybersecurity purposes, the same methods can be applied to e-commerce platforms for visualizing customer activity, identifying popular regions, and analyzing buying trends.
 
 ### Acknowledgements
 
-    This project was built with love and the help of ChatGPT and GitHub Copilot. It serves as a prototype for real-time log analysis, but improvements such as proper routing, schemas, and enhanced MongoDB queries are still needed for full production readiness.
+This project was built with love and the help of ChatGPT and GitHub Copilot. It serves as a prototype for real-time log analysis, but improvements such as proper routing, schemas, and enhanced MongoDB queries are still needed for full production readiness.
