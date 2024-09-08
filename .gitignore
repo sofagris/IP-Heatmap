@@ -1,0 +1,18 @@
+# Ignorer Python-cachefiler og mapper
+__pycache__/
+*.pyc
+
+# Ignorer konfigurasjonsfiler
+.env
+
+# Ignorer databasefiler
+*.db
+
+# Ignorer loggfiler
+*.log
+
+# Ignorer mappe for virtuelle miljøer
+venv/
+
+# Ignorer alt i 'secrets/'-mappen
+secrets/

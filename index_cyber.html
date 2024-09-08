@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Attack Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+        /* Sett kartet til å dekke hele skjermen */
+        #map {
+            height: 100vh;
+            width: 100vw; /* Sørg for at kartet dekker hele bredden av vinduet */
+            background-color: #000; /* Svart bakgrunn for å gi en cyber-effekt */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Neon ripple-effekt */
+        .ripple {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 94, 0, 0.5); /* Neon cyan farge */
+            border: 2px solid rgba(255, 102, 0, 0.7);
+            transform: scale(0);
+            animation: ripple-animation 1s linear infinite;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Tilpass popup-vinduene for neon-effekt */
+        .leaflet-popup-content-wrapper {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #ff002b; /* Neon cyan farge */
+            border-radius: 8px;
+            border: 1px solid #00FFFF;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5); /* Neon glød */
+        }
+
+        .leaflet-popup-tip-container {
+            width: 100%;
+        }
+
+        .leaflet-popup-tip {
+            background: #00FFFF; /* Neon cyan farge */
+        }
+
+        /* Tilpass markør-ikonene for neon-effekt */
+        .leaflet-marker-icon {
+            border-radius: 50%;
+            background-color: rgba(255, 153, 0, 0.2); /* Transparent cyan bakgrunn */
+            border: 1px solid #ff5100;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); /* Neon glød */
+        }
+
+        /* Neon stil for attribution-tekst */
+        .leaflet-control-attribution {
+            color: #00FFFF;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.7);
+        }
+
+        /* Neon stil for zoom-kontroller */
+        .leaflet-control-zoom a {
+            background-color: #000;
+            color: #00FFFF;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            border: 1px solid #00FFFF;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background-color: #00FFFF;
+            color: #000;
+        }
+
+        /* Stil for angrepsinformasjonstabell */
+        .attack-table-container {
+            z-index: 400;
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 700px;
+            max-height: 320px;
+            overflow-y: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        table {
+            
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        tbody {
+           max-height: 300px; /* Set a maximum height for the tbody to enable scrolling */
+           overflow-y: auto;
+           
+        }
+
+        th, td {
+            padding: 5px;
+            text-align: left;
+        }
+
+        th {
+            /* Sett shaddow på teksten */
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.7);
+            clip-path: inset(0 0 -10px 0);
+            z-index: 1200;
+            position: sticky;
+            top: 0;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.5));
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+            /*
+            background-color: rgba(255, 255, 255, 0.1);
+            */
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .table-controls {
+            position: absolute;
+            z-index: 700;
+            top: 10px;
+            left: 60px;
+            width: calc(100% - 120px); /* Redusert bredde for å passe inn i vinduet */
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #autoscroll-checkbox {
+            margin-right: 10px;
+        }
+
+        #search-input {
+            width: 200px;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border-radius: 3px;
+            margin-left: auto; /* Skyver søkefeltet til høyre */
+        }
+
+        .menu-btn, .toggle-table-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            /* border: 1px solid rgba(255, 255, 255, 0.3); */
+            color: #fff;
+            border-radius: 3px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-right: 10px;
+            /* Neon stil for knappen */
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            border: 1px solid #00FFFF;
+        }
+
+        .menu-btn ion-icon, .toggle-table-btn ion-icon {
+            margin-right: 5px;
+        }
+
+        .menu-btn:hover, .toggle-table-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Loading modal */
+        .loading-modal {
+            display: block; /* Modal er synlig som standard */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.7); /* Halvtransparent svart bakgrunn */
+        }
+
+        .loading-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            text-align: center;
+            font-size: 18px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Modal Attacker Information */
+        /* The Modal (background) */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 500;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding-top: 60px;
+        }
+
+        /* Modal Content Header h2*/
+        .modal h2 {
+            text-align: center;
+            color: #00FFFF;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.7);
+        }
+
+        /* Modal Content Header h3*/
+        .modal h3 {
+            color: #00FFFF;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.7);
+            margin-left: 10px;
+        }
+        
+
+        /* Modal Content */
+        .modal-content {
+            
+            margin: 5% auto;
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        /* Close button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .close:hover,
+        .close:focus {
+            /* color: black; */
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.7);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: left;
+            margin-bottom: 0px;
+            margin-right: 1px;
+            
+        }
+
+        .tabs ion-icon {
+            font-size: 12px; /* Justerer ikonstørrelsen */
+        }
+
+        .tablinks {
+            background-color: #555;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            border-bottom-right-radius: 0px;
+            border-bottom-left-radius: 0px;
+            gap: 5px; /* Justerer avstanden mellom ikonet og teksten */
+        }
+
+        .tablinks.active {
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+            border: 1px solid #00FFFF;
+            background-color: #aaa;
+        }
+
+        .tabcontent {
+            display: none;
+            border-top: solid 1px #555;
+        }
+
+        .tabcontent.active {
+            display: block;
+        }
+
+        /* Overview Content */
+        .overview-content {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .graph {
+            width: 45%;
+        }
+
+        .details {
+            width: 50%;
+        }
+
+        /* Log Table */
+        #log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #log-table th, #log-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        #log-table th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        /* Styling for the Top 10 Talkers table */
+        .top-talkers-controls {
+            position: absolute;
+            z-index: 400;
+            top: 60px;
+            left: 60px;
+            width: 700px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 5px;
+            padding-top: 0px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 5px;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .top-talkers-controls h3 {
+            margin: 5px;
+            padding: 5px;
+            text-align: center;
+            color: #00FFFF;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 0.7);
+        }
+
+        .top-talkers-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .top-talkers-table th, .top-talkers-table td {
+            padding: 8px;
+            
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .top-talkers-table th {
+            background-color: rgba(0, 0, 0, 0.9);
+            position: sticky;
+            top: 0;
+        }
+
+        .top-talkers-table tbody {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .top-talkers-table img {
+            width: 20px;
+            height: auto;
+        }
+
+        /* Ionicons styling below */
+        /* Rotate animation */
+        .rotate {
+            animation: rotate-animation 2s linear infinite;
+        }
+
+        @keyframes rotate-animation {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Blinking animation */
+        .blink {
+            animation: blink-animation 1s steps(2, start) infinite;
+        }
+
+        @keyframes blink-animation {
+            to {
+                visibility: hidden;
+            }
+        }
+
+
+    </style>
+</head>
+<body>
+    <!-- Loading modal -->
+    <div id="loadingModal" class="loading-modal">
+        <div class="loading-modal-content">            
+            <p><ion-icon name="refresh-outline" class="rotate"></ion-icon> Loading map data, please wait...</p>
+        </div>
+    </div>
+
+    <!-- Kartet vil bli lagt til her -->
+    <div id="map"></div>
+
+    <!-- Menylinje i toppen av kartet -->
+    <div class="table-controls">
+        <button id="toggle-table-btn" class="toggle-table-btn">
+            <ion-icon name="refresh-outline" class="rotate"></ion-icon> Realtime log
+        </button>
+        <label>
+            <input type="checkbox" id="autoscroll-checkbox" checked> Auto-scroll
+        </label>
+        <button id="top-talkers-btn" class="toggle-table-btn">
+            <ion-icon name="podium-outline"></ion-icon> Top 10
+        </button>
+        <button id="dashboard-btn" class="menu-btn">
+            <ion-icon name="grid-outline"></ion-icon> Dashboard
+        </button>
+        <button id="settings-btn" class="menu-btn">
+            <ion-icon name="settings-outline"></ion-icon> Settings
+        </button>
+        <button id="stats-reports-btn" class="menu-btn">
+            <ion-icon name="analytics-outline"></ion-icon> Stats & Reports
+        </button>
+        <input type="text" id="search-input" placeholder="Search..." />
+    </div>
+
+    <!-- Modal for attacker information -->
+    <div id="attacker-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="close-modal">&times;</span>
+            <h2>Attacker Information</h2>
+
+            <!-- Tabs for different sections -->
+            <div class="tabs">
+                <button class="tablinks active" onclick="openTab(event, 'Overview')">
+                    <ion-icon name="information-circle-outline"></ion-icon> Overview
+                </button>
+                <button class="tablinks" onclick="openTab(event, 'Logs')">
+                    <ion-icon name="document-text-outline"></ion-icon> Logs
+                </button>
+                <button class="tablinks" onclick="openTab(event, 'Analysis')">
+                    <ion-icon name="analytics-outline"></ion-icon> Analysis
+                </button>
+                <button class="tablinks" onclick="openTab(event, 'Actions')">
+                    <ion-icon name="construct-outline"></ion-icon> Actions
+                </button>
+            </div>
+
+            <!-- Overview Tab Content -->
+            <div id="Overview" class="tabcontent">
+                <div class="overview-content">
+                    <div class="graph">
+                        <!-- Placeholder for graph -->
+                        <canvas id="attackGraph"></canvas>
+                    </div>
+                    <div class="details">
+                        <p><strong>IP Address:</strong> <span id="ip-address"></span></p>
+                        <p><strong>Hostname:</strong> <span id="hostname"></span></p>
+                        <p><strong>First Observed:</strong> <span id="first-observed"></span></p>
+                        <p><strong>Last Observed:</strong> <span id="last-observed"></span></p>
+                        <p><strong>Total Attempts:</strong> <span id="total-attempts"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Tab Content -->
+            <div id="Logs" class="tabcontent" style="display:none;">
+                <h3>Detailed Log</h3>
+                <table id="log-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Event</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Log entries will be dynamically added here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Analysis Tab Content -->
+            <div id="Analysis" class="tabcontent" style="display:none;">
+                <h3>Attack Analysis</h3>
+                <p>Type of Attack: <span id="attack-type"></span></p>
+                <p>Likelihood of Success: <span id="attack-likelihood"></span></p>
+                <p>Known Vulnerabilities: <span id="known-vulnerabilities"></span></p>
+            </div>
+
+            <!-- Actions Tab Content -->
+            <div id="Actions" class="tabcontent" style="display:none;">
+                <h3>Take Action</h3>
+                <button id="whois-btn">WHOIS Lookup</button>
+                <button id="portscan-btn">Port Scan</button>
+                <button id="os-detection-btn">OS Detection</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Tabell for å vise Top 10 angripere -->
+    <div class="top-talkers-controls">
+        <h3>Top 10 Attackers</h3>
+        <table class="top-talkers-table">
+            <thead>
+                <tr>
+                    <th>Flag</th>
+                    <th>Source IP</th>
+                    <th>Count</th>
+                    <th>Country</th>
+                    <th>City</th>
+                    <th>Org</th>
+                </tr>
+            </thead>
+            <tbody id="top-talkers-table-body">
+                <!-- Rows will be added here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Tabell for å vise angrepsinformasjon i sanntid -->
+    <div class="attack-table-container" id="attack-table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Flag</th>
+                    <th>Time</th>
+                    <th>IP</th>
+                    <th>Port</th>
+                    <th>Country</th>
+                    <th>City</th>
+                    <th>Org</th>
+                </tr>
+            </thead>
+            <tbody id="attack-table-body">
+                <!-- Attack info will be added here dynamically -->
+            </tbody>
+        </table>
+        
+    </div>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        
+
+
+
+        // Bruk et futuristisk kartstil fra Mapbox eller CartoDB
+        var map = L.map('map').setView([51.505, -0.09], 3);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        /* Koble til WebSocket-serveren for å motta data om SSH-tilkoblinger
+           sørg for å erstatte "window.location.hostname" med riktig IP-adresse
+           og bruk portnummeret som er angitt i WebSocket-serveren
+        */        
+        const hostname = window.location.hostname;
+        const port = window.location.port ? window.location.port : '443'; // Bruk 443 som fallback hvis ingen port er spesifisert
+        const wsUrl = `ws://${hostname}:${port}/ws`;
+         
+        let ws;
+
+        function connectWebSocket() {
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = function(event) {
+                console.log('WebSocket connection established at: '+ wsUrl );
+                // alert('WebSocket connection established at: '+ wsUrl );
+                /* Når WebSocket-tilkoblingen er etablert skal vi vise en melding om wsUrl i websiden
+                   Dette er nyttig for å bekrefte at WebSocket-tilkoblingen er vellykket
+                */
+            };
+
+            ws.onmessage = function(event) {
+                console.log('WebSocket message received');
+                const data = JSON.parse(event.data);
+                console.log('Received data:', data);
+
+                if (data.geoip_info.latitude && data.geoip_info.longitude) {
+                    const latLng = [data.geoip_info.latitude, data.geoip_info.longitude];
+                    console.log('Creating ripple effect at:', latLng);
+
+                    const rippleDiv = document.createElement('div');
+                    rippleDiv.className = 'ripple';
+                    console.log('Ripple div created:', rippleDiv);
+
+                    const marker = L.marker(latLng, {
+                        icon: L.divIcon({
+                            className: 'ripple-container',
+                            html: rippleDiv.outerHTML,
+                            iconSize: [30, 30]
+                        })
+                    }).addTo(map);
+
+                    console.log('Marker added to map:', marker);
+
+                    setTimeout(() => {
+                        map.removeLayer(marker);
+                        console.log('Marker removed from map:', marker);
+                    }, 1000); // Vis ripple-effekten i 1 sekund
+                    addAttackToTable(data);
+                } else {
+                    console.error('GeoIP data incomplete:', data);
+                }
+            };
+
+            ws.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+
+            ws.onclose = function(event) {
+                console.log('WebSocket connection closed. Attempting to reconnect...');
+                setTimeout(connectWebSocket, 5000); // Forsøk å koble til på nytt etter 5 sekunder
+            };
+        }
+
+        // Function to open the modal
+        function openModal() {
+            document.getElementById('attacker-modal').style.display = 'block';
+        }
+
+        // Function to close the modal
+        document.getElementById('close-modal').onclick = function() {
+            document.getElementById('attacker-modal').style.display = 'none';
+        }
+
+        // Function to switch between tabs
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Hide all tab contents
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Remove the active class from all buttons
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+
+            // Show the current tab and add active class to the button
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // Default to open the Overview tab
+        document.getElementsByClassName("tablinks")[0].click();
+
+
+        function addAttackToTable(data) {
+            const tableBody = document.getElementById('attack-table-body');
+            // Sjekk om antall rader i tabellen overskrider 100
+            if (tableBody.rows.length >= 100) {
+                // Fjern den eldste raden (den første i tabellen)
+                tableBody.deleteRow(0);
+            }
+
+            const row = document.createElement('tr');
+
+            // Flag image
+            const flagCell = document.createElement('td');
+            const flagImg = document.createElement('img');
+            const countryCode = data.geoip_info.country ? data.geoip_info.country.toLowerCase() : 'unknown';
+            flagImg.src = `/static/flags/png100px/${countryCode}.png`;
+            flagImg.alt = data.country || "Unknown";
+            flagImg.style.width = '20px'; // Tilpasser størrelsen på flagget
+            flagImg.style.height = 'auto';
+            flagCell.appendChild(flagImg);
+            // Zoomer inn på landet i kartet når flagget klikkes
+            flagImg.style.cursor = 'pointer';
+            flagImg.onclick = function() {
+                map.setView([data.geoip_info.latitude, data.geoip_info.longitude], 8);
+            };
+            // Marker yttergrensene og sett alternativ bakgrunnsfarge på landet når flagget holdes over
+            // dataene som benyttes er hentet fra geojason filen
+            flagImg.onmouseover = function() {
+                if (countryLayer) {
+                    countryLayer.eachLayer(function(layer) {
+                        if (layer.feature.properties.ISO_A2 === data.geoip_info.country) {
+                            layer.setStyle({
+                                fillColor: 'yellow',  // Endre farge for å markere landet
+                                fillOpacity: 0.5,
+                                color: 'red'
+                            });
+                        }
+                    });
+                }
+            };
+
+            // Tilbakestill fargen når musen fjernes fra flagget
+            flagImg.onmouseout = function() {
+                if (countryLayer) {
+                    countryLayer.resetStyle();
+                }
+            };
+            row.appendChild(flagCell);
+
+            // Time of attack
+            const timeCell = document.createElement('td');
+            timeCell.textContent = new Date().toLocaleTimeString();
+            row.appendChild(timeCell);
+
+            // IP address
+            const ipCell = document.createElement('td');
+            ipCell.textContent = data.source_ip;
+            row.appendChild(ipCell);
+
+            // Port (assuming source_port is available)
+            const portCell = document.createElement('td');
+            portCell.textContent = data.dest_port || "N/A";
+            // Gjør cellen klikkbar for å vise portinformasjon og hente detaljer fra API-et /service/port
+            portCell.style.cursor = 'pointer';
+            portCell.onclick = async function() {
+                try {
+                    const response = await fetch(`/service/${data.dest_port}`);
+                    if (!response.ok) {
+                        throw new Error(`Error fetching service data: ${response.statusText}`);
+                    }
+                    const portData = await response.json();
+                    console.log('Port data:', portData);
+
+                    if (portData.error) {
+                        alert(`Port ${data.dest_port} not found.`);
+                    } else {
+                        const servicesInfo = Array.isArray(portData.services)
+                            ? portData.services.map(service => `(${service.transport_protocol}) ${service.service_name}: ${service.description}`).join('\n')
+                            : `(${service.transport_protocol}) ${portData.service.service_name}: ${portData.service.description}`;
+                        
+                        alert(`Port ${data.dest_port} is used for:\n${servicesInfo}`);
+                    }
+                } catch (error) {
+                    console.error('Failed to fetch port data:', error);
+                    alert(`Failed to fetch details for port ${data.dest_port}.`);
+                }
+            };
+
+            row.appendChild(portCell);
+
+            // Country
+            const countryCell = document.createElement('td');
+            countryCell.textContent = data.geoip_info.country || "Unknown";
+            row.appendChild(countryCell);
+
+            // City
+            const cityCell = document.createElement('td');
+            cityCell.textContent = data.geoip_info.city || "Unknown";
+            row.appendChild(cityCell);
+
+            // Organization
+            const orgCell = document.createElement('td');
+            orgCell.textContent = data.geoip_info.org || "Unknown";
+            row.appendChild(orgCell);
+
+            // Append row to table
+            tableBody.appendChild(row);
+
+            // Auto-scroll to the bottom of the table if enabled
+            const autoscrollEnabled = document.getElementById('autoscroll-checkbox').checked;
+            if (autoscrollEnabled) {
+                const tableContainer = document.querySelector('.attack-table-container');
+                tableContainer.scrollTop = tableContainer.scrollHeight;
+            }
+        }
+
+        // Top 10 Talkers
+        async function fetchTopTalkers() {
+            try {
+                const response = await fetch('/api/connections/top/dest_port');
+                const topTalkers = await response.json();
+                const tableBody = document.getElementById('top-talkers-table-body');
+
+                // Clear any existing rows
+                tableBody.innerHTML = '';
+
+                topTalkers.forEach(talker => {
+                    const row = document.createElement('tr');
+
+                    // Flag cell
+                    const flagCell = document.createElement('td');
+                    const flagImg = document.createElement('img');
+                    const countryCode = talker.geoip_info.country ? talker.geoip_info.country.toLowerCase() : 'unknown';
+                    flagImg.src = `/static/flags/png100px/${countryCode}.png`;
+                    flagImg.alt = talker.geoip_info.country || "Unknown";
+                    flagCell.appendChild(flagImg);
+                    row.appendChild(flagCell);
+
+                    // Source IP cell
+                    const ipCell = document.createElement('td');
+                    ipCell.textContent = talker.source_ip || "N/A";
+                    // Show attacker information modal when IP address is clicked
+                    ipCell.style.cursor = 'pointer';
+                    ipCell.onclick = function() {
+                        document.getElementById('ip-address').textContent = talker.source_ip || "N/A";
+                        document.getElementById('hostname').textContent = talker.hostname || "N/A";
+                        document.getElementById('first-observed').textContent = talker.first_observed || "N/A";
+                        document.getElementById('last-observed').textContent = talker.last_observed || "N/A";
+                        document.getElementById('total-attempts').textContent = talker.count || "N/A";
+                        openModal();
+                    };
+                    row.appendChild(ipCell);
+
+                    // Count cell
+                    const countCell = document.createElement('td');
+                    countCell.textContent = talker.count || "N/A";
+                    row.appendChild(countCell);
+
+                    // Country cell
+                    const countryCell = document.createElement('td');
+                    countryCell.textContent = talker.geoip_info.country || "N/A";
+                    row.appendChild(countryCell);
+
+                    // City cell
+                    const cityCell = document.createElement('td');
+                    cityCell.textContent = talker.geoip_info.city || "N/A";
+                    row.appendChild(cityCell);
+
+                    // Org cell
+                    const orgCell = document.createElement('td');
+                    orgCell.textContent = talker.geoip_info.org || "N/A";
+                    row.appendChild(orgCell);
+
+                    // Append the row to the table body
+                    tableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error('Failed to fetch top talkers:', error);
+            }
+        }
+
+        // Call the function initially to display the top talkers
+        fetchTopTalkers();
+
+        // Set up an interval to refresh the top talkers every 15 seconds
+        setInterval(fetchTopTalkers, 15000);
+
+
+        connectWebSocket();
+        let countryLayer;
+        const table = document.getElementById('attack-table-container');
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleTableBtn = document.getElementById('toggle-table-btn');
+            
+
+            toggleTableBtn.addEventListener('click', function () {
+                if (table.style.display === 'none') {
+                    table.style.display = '';
+                    toggleTableBtn.textContent = 'Hide Table';
+                } else {
+                    table.style.display = 'none';
+                    toggleTableBtn.textContent = 'Show Table';
+                }
+            });
+
+            // Vis lastemodalen når siden lastes
+            const loadingModal = document.getElementById('loadingModal');
+            
+            // Last inn GeoJSON-fila
+            
+            fetch('/static/geojson/countries.geojson')  // Sørg for å ha en gyldig GeoJSON-fil
+                .then(response => response.json())
+                .then(data => {
+                    countryLayer = L.geoJSON(data, {
+                        style: {
+                            color: "#000",  // Standard kantfarge for land
+                            weight: 1,  // Standard kantbredde for land
+                        }
+                    }).addTo(map);
+
+                    // Når GeoJSON-filen er lastet, fjern modalen
+                    loadingModal.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error loading GeoJSON:', error);
+                    loadingModal.innerHTML = '<p>Error loading map data. Please try again later.</p>';
+                });
+        });
+    </script>
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</body>
+</html>
