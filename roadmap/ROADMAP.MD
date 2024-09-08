@@ -64,72 +64,72 @@ This project introduces a generic /log endpoint that processes logs based on a s
 
 ### Generic Log Endpoint
 
-    The /log endpoint processes different log categories by mapping them to their respective MongoDB collections and validating the payload using Pydantic models:
+The /log endpoint processes different log categories by mapping them to their respective MongoDB collections and validating the payload using Pydantic models:
 
-    ```python
-    @app.post("/log")
-    async def receive_log(
-        log_category: str,
-        payload: dict  # Incoming log data
-    ):
-        # Map log categories to MongoDB collections
-        collection_map = {
-            "firewall": firewall_collection,
-            "nginx": nginx_collection,
-            "postfix": postfix_collection,
-            "auth": auth_collection,
-            "httpd": httpd_collection,
-        }
+```python
+@app.post("/log")
+async def receive_log(
+    log_category: str,
+    payload: dict  # Incoming log data
+):
+    # Map log categories to MongoDB collections
+    collection_map = {
+        "firewall": firewall_collection,
+        "nginx": nginx_collection,
+        "postfix": postfix_collection,
+        "auth": auth_collection,
+        "httpd": httpd_collection,
+    }
 
-        if log_category in collection_map:
-            collection = collection_map[log_category]
+    if log_category in collection_map:
+        collection = collection_map[log_category]
 
-            # Validate log data using Pydantic models
-            if log_category in log_model_map:
-                LogModel = log_model_map[log_category]
-                try:
-                    validated_data = LogModel(**payload).dict()
-                    collection.insert_one(validated_data)
-                    return {"status": f"{log_category} log processed"}
-                except Exception as e:
-                    raise HTTPException(status_code=400, detail=str(e))
-            else:
-                raise HTTPException(status_code=400, detail="No model for log category")
+        # Validate log data using Pydantic models
+        if log_category in log_model_map:
+            LogModel = log_model_map[log_category]
+            try:
+                validated_data = LogModel(**payload).dict()
+                collection.insert_one(validated_data)
+                return {"status": f"{log_category} log processed"}
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=str(e))
         else:
-            raise HTTPException(status_code=400, detail="Unknown log category")
-    ```
+            raise HTTPException(status_code=400, detail="No model for log category")
+    else:
+        raise HTTPException(status_code=400, detail="Unknown log category")
+```
 
 ### Pydantic Models
 
-    Pydantic is used to define and validate the structure of incoming log data. This ensures consistency across different log categories.
+Pydantic is used to define and validate the structure of incoming log data. This ensures consistency across different log categories.
 
-    For example, the model for a Firewall Log looks like this:
+For example, the model for a Firewall Log looks like this:
 
-    ```python
-    class FirewallLog(BaseModel):
-        source_ip: str
-        source_port: int
-        dest_ip: str
-        dest_port: int
-        protocol: Optional[str] = None
-        action: Optional[str] = None
-        fw_rule: Optional[str] = None
-        connection_state: Optional[str] = None
-        in_interface: Optional[str] = None
-        out_interface: Optional[str] = None
-        timestamp: datetime
-    ```
+```python
+class FirewallLog(BaseModel):
+    source_ip: str
+    source_port: int
+    dest_ip: str
+    dest_port: int
+    protocol: Optional[str] = None
+    action: Optional[str] = None
+    fw_rule: Optional[str] = None
+    connection_state: Optional[str] = None
+    in_interface: Optional[str] = None
+    out_interface: Optional[str] = None
+    timestamp: datetime
+```
 
 Similar models are defined for NGINX, Postfix, Auth, and HTTPD logs.
 
 ### Real-Time Updates with WebSockets
 
-    The project also uses WebSockets to send real-time log updates to connected clients. This allows for live tracking of incoming traffic and potential attacks on servers.
+The project also uses WebSockets to send real-time log updates to connected clients. This allows for live tracking of incoming traffic and potential attacks on servers.
 
-    ```python
-    # Sending real-time GeoIP info to WebSocket clients
-    await notify_clients(connection_info)
-    ```
+```python
+# Sending real-time GeoIP info to WebSocket clients
+await notify_clients(connection_info)
+```
 
 ### Extensibility
 
