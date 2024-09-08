@@ -473,7 +473,7 @@ async def notify_clients(message):
 # Default route to serve the index file
 @app.get("/")
 async def serve_index():
-    return FileResponse("index_cyber.html")
+    return FileResponse("index.html")
 
 # To prevent 404 errors when favicon is requested
 @app.get("/favicon.ico")
