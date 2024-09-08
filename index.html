@@ -60,6 +60,7 @@
         }
 
         /* Tilpass markør-ikonene for neon-effekt */
+        
         .leaflet-marker-icon {
             border-radius: 50%;
             background-color: rgba(255, 153, 0, 0.2); /* Transparent cyan bakgrunn */
@@ -122,7 +123,7 @@
         }
 
         th {
-            /* Sett shaddow på teksten */
+            /* Set shaddow on the text */
             text-shadow: 0 0 5px rgba(0, 255, 255, 0.7);
             clip-path: inset(0 0 -10px 0);
             z-index: 1200;
@@ -167,7 +168,7 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             color: #fff;
             border-radius: 3px;
-            margin-left: auto; /* Skyver søkefeltet til høyre */
+            margin-left: auto; /* Move the search box to the right */
         }
 
         .menu-btn, .toggle-table-btn {
@@ -446,7 +447,7 @@
         </div>
     </div>
 
-    <!-- Kartet vil bli lagt til her -->
+    <!-- The map will be added here -->
     <div id="map"></div>
 
     <!-- Menylinje i toppen av kartet -->
@@ -547,7 +548,7 @@
     </div>
 
 
-    <!-- Tabell for å vise Top 10 angripere -->
+    <!-- Table for Top 10 attackers -->
     <div class="top-talkers-controls">
         <h3>Top 10 Attackers</h3>
         <table class="top-talkers-table">
@@ -590,9 +591,6 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
         
-
-
-
         // Bruk et futuristisk kartstil fra Mapbox eller CartoDB
         var map = L.map('map').setView([51.505, -0.09], 3);
 
@@ -601,13 +599,13 @@
             subdomains: 'abcd',
             maxZoom: 19
         }).addTo(map);
-
-        /* Koble til WebSocket-serveren for å motta data om SSH-tilkoblinger
-           sørg for å erstatte "window.location.hostname" med riktig IP-adresse
-           og bruk portnummeret som er angitt i WebSocket-serveren
-        */        
+               
+       /* Connect to the WebSocket server to receive data about connection attepts
+           make sure to replace "window.location.hostname" with the correct IP address
+           and use the port number specified in the WebSocket server
+        */
         const hostname = window.location.hostname;
-        const port = window.location.port ? window.location.port : '443'; // Bruk 443 som fallback hvis ingen port er spesifisert
+        const port = window.location.port ? window.location.port : '443'; // Use 443 as fallback if port is not specified
         const wsUrl = `ws://${hostname}:${port}/ws`;
          
         let ws;
@@ -618,9 +616,7 @@
             ws.onopen = function(event) {
                 console.log('WebSocket connection established at: '+ wsUrl );
                 // alert('WebSocket connection established at: '+ wsUrl );
-                /* Når WebSocket-tilkoblingen er etablert skal vi vise en melding om wsUrl i websiden
-                   Dette er nyttig for å bekrefte at WebSocket-tilkoblingen er vellykket
-                */
+                /* TODO: Add a visual indicator on opt of the map that the WebSocket connection is active */
             };
 
             ws.onmessage = function(event) {
@@ -649,7 +645,7 @@
                     setTimeout(() => {
                         map.removeLayer(marker);
                         console.log('Marker removed from map:', marker);
-                    }, 1000); // Vis ripple-effekten i 1 sekund
+                    }, 1000); // Show ripple-effect for 1 second
                     addAttackToTable(data);
                 } else {
                     console.error('GeoIP data incomplete:', data);
