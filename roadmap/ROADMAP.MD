@@ -23,32 +23,40 @@ This project provides a generic approach for handling log data from various sour
 ### Installation
 
 1. Clone this repository:
-   ```bash
-   git clone https://github.com/sofagris/IP-Heatmap.git
-   cd IP-Heatmap
+
+```bash
+git clone https://github.com/sofagris/IP-Heatmap.git
+cd IP-Heatmap
+```
 
 2. Install the required dependencies:
-    ````bash
-    pip install -r requirements.txt
+
+```bash
+pip install -r requirements.txt
+```
 
 3. Configure your MongoDB settings in the .env file:
-    ````env
-    MONGO_HOST = "192.168.0.100"
-    MONGO_PORT = 27017
-    MONGO_USER = "root"
-    MONGO_PASS = "testpass"
-    MONGO_DB = "cyber_analysis"
 
-    # Log collections
-    MONGO_FW_COLLECTION = "firewall_logs"
-    MONGO_NGINX_COLLECTION = "nginx_logs"
-    MONGO_POSTFIX_COLLECTION = "postfix_logs"
-    MONGO_AUTH_COLLECTION = "auth_logs"
-    MONGO_HTTPD_COLLECTION = "httpd_logs"
+```env
+MONGO_HOST = "192.168.0.100"
+MONGO_PORT = 27017
+MONGO_USER = "root"
+MONGO_PASS = "testpass"
+MONGO_DB = "cyber_analysis"
+
+# Log collections
+MONGO_FW_COLLECTION = "firewall_logs"
+MONGO_NGINX_COLLECTION = "nginx_logs"
+MONGO_POSTFIX_COLLECTION = "postfix_logs"
+MONGO_AUTH_COLLECTION = "auth_logs"
+MONGO_HTTPD_COLLECTION = "httpd_logs"
+```
 
 4. Run the FastAPI server:
-    ````bash
-    uvicorn main:app --reload
+
+```bash
+uvicorn main:app --reload
+```
 
 ### Handling Different Log Categories
 
