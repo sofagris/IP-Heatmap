@@ -16,3 +16,6 @@ venv/
 
 # Ignorer alt i 'secrets/'-mappen
 secrets/
+
+# Ignore the output from pip freeze
+pipfreeze.txt

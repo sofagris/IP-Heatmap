@@ -1,0 +1,10 @@
+fastapi
+requests
+python-dotenv
+cachetools
+python-whois
+ipwhois
+pymongo
+uvicorn
+websockets
+watchdog

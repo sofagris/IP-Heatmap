@@ -44,6 +44,7 @@ mongo_port = int(os.getenv("MONGO_PORT", 27017))
 mongo_user = os.getenv("MONGO_USER", "root")
 mongo_pass = os.getenv("MONGO_PASS", "password")
 mongo_db = os.getenv("MONGO_DB", "cyber_analysis")
+# MongoDB collections from .env file
 mongo_fw_collection = os.getenv("MONGO_FW_COLLECTION", "firewall_logs")
 mongo_nginx_collection = os.getenv("MONGO_NGINX_COLLECTION", "nginx_logs")
 mongo_postfix_collection = os.getenv("MONGO_POSTFIX_COLLECTION", "postfix_logs")
