@@ -17,5 +17,8 @@ venv/
 # Ignorer alt i 'secrets/'-mappen
 secrets/
 
+# Ignore deprecated files
+deprecated/
+
 # Ignore the output from pip freeze
 pipfreeze.txt
