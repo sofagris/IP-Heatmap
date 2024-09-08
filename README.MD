@@ -40,6 +40,12 @@ To run the project, follow these steps:
     ```bash
     uvicorn main:app --reload
 
+# ** To send data to the API for testing, use the docs page located at <Your server>/docs
+The endpoint for firewall-logs will be /connection and requires source_ip: str,
+    source_port: int,
+    dest_ip: str,
+    dest_port: int
+
 # Improvements and Next Steps
 
     - Router Implementation: Split endpoints into logical routers for maintainability.

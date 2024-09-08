@@ -544,6 +544,7 @@ async def receive_connection_info(
     dest_ip: str,
     dest_port: int,
     request: Request,
+    log_category: Optional[str] = None, # Firewall, Nginx, Postfix, etc.
     source_zone: Optional[str] = None,
     dest_zone: Optional[str] = None,
     fw_rule: Optional[str] = None,
