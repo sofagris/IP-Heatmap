@@ -52,7 +52,7 @@ This project provides a generic approach for handling log data from various sour
 
 ### Handling Different Log Categories
 
-    This project introduces a generic /log endpoint that processes logs based on a specified log_category. Each log category, such as firewall, nginx, postfix, etc., is processed according to its own schema. We use Pydantic models to validate and structure incoming data for each category, ensuring data consistency.
+This project introduces a generic /log endpoint that processes logs based on a specified log_category. Each log category, such as firewall, nginx, postfix, etc., is processed according to its own schema. We use Pydantic models to validate and structure incoming data for each category, ensuring data consistency.
 
 #### The following log categories are supported:
 
@@ -65,7 +65,7 @@ This project provides a generic approach for handling log data from various sour
 ### Generic Log Endpoint
 
     The /log endpoint processes different log categories by mapping them to their respective MongoDB collections and validating the payload using Pydantic models:
-    ```python
+    ```
     @app.post("/log")
     async def receive_log(
         log_category: str,
