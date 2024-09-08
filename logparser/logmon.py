@@ -22,7 +22,7 @@ from ipaddress import ip_address
 # REST_SERVER=http://localhost:8000/connection
 # LOG_PREFIX=Mikrotik
 # IGNORE_FROM_RFC1918=false
-# IGNORE_CONNECTION_STATE=
+# IGNORE_CONNECTION_STATE=established,invalid
 # LOG_FILE=/var/log/syslog
 
 load_dotenv()
