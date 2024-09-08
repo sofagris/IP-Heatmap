@@ -65,7 +65,7 @@ This project provides a generic approach for handling log data from various sour
 ### Generic Log Endpoint
 
     The /log endpoint processes different log categories by mapping them to their respective MongoDB collections and validating the payload using Pydantic models:
-    ````
+    ```python
     @app.post("/log")
     async def receive_log(
         log_category: str,
@@ -96,14 +96,14 @@ This project provides a generic approach for handling log data from various sour
                 raise HTTPException(status_code=400, detail="No model for log category")
         else:
             raise HTTPException(status_code=400, detail="Unknown log category")
-    ````
+    ```
 
 ### Pydantic Models
 
     Pydantic is used to define and validate the structure of incoming log data. This ensures consistency across different log categories.
 
     For example, the model for a Firewall Log looks like this:
-    ````python
+    ```python
     class FirewallLog(BaseModel):
         source_ip: str
         source_port: int
@@ -116,7 +116,7 @@ This project provides a generic approach for handling log data from various sour
         in_interface: Optional[str] = None
         out_interface: Optional[str] = None
         timestamp: datetime
-    ````
+    ```
 
 Similar models are defined for NGINX, Postfix, Auth, and HTTPD logs.
 
@@ -124,10 +124,10 @@ Similar models are defined for NGINX, Postfix, Auth, and HTTPD logs.
 
     The project also uses WebSockets to send real-time log updates to connected clients. This allows for live tracking of incoming traffic and potential attacks on servers.
 
-    ````python
+    ```python
     # Sending real-time GeoIP info to WebSocket clients
     await notify_clients(connection_info)
-    ````
+    ```
 
 ### Extensibility
 
@@ -150,4 +150,3 @@ Similar models are defined for NGINX, Postfix, Auth, and HTTPD logs.
 ### Acknowledgements
 
     This project was built with love and the help of ChatGPT and GitHub Copilot. It serves as a prototype for real-time log analysis, but improvements such as proper routing, schemas, and enhanced MongoDB queries are still needed for full production readiness.
-
