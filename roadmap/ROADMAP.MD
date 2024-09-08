@@ -65,7 +65,8 @@ This project introduces a generic /log endpoint that processes logs based on a s
 ### Generic Log Endpoint
 
     The /log endpoint processes different log categories by mapping them to their respective MongoDB collections and validating the payload using Pydantic models:
-    ```
+
+    ```python
     @app.post("/log")
     async def receive_log(
         log_category: str,
@@ -103,6 +104,7 @@ This project introduces a generic /log endpoint that processes logs based on a s
     Pydantic is used to define and validate the structure of incoming log data. This ensures consistency across different log categories.
 
     For example, the model for a Firewall Log looks like this:
+
     ```python
     class FirewallLog(BaseModel):
         source_ip: str
