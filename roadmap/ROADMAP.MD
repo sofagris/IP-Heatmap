@@ -65,7 +65,7 @@ This project provides a generic approach for handling log data from various sour
 ### Generic Log Endpoint
 
     The /log endpoint processes different log categories by mapping them to their respective MongoDB collections and validating the payload using Pydantic models:
-    ````python
+    ````
     @app.post("/log")
     async def receive_log(
         log_category: str,
