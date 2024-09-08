@@ -48,6 +48,9 @@ mongo_db = os.getenv("MONGO_DB", "cyber_analysis")
 mongo_fw_collection = os.getenv("MONGO_FW_COLLECTION", "firewall_logs")
 mongo_nginx_collection = os.getenv("MONGO_NGINX_COLLECTION", "nginx_logs")
 mongo_postfix_collection = os.getenv("MONGO_POSTFIX_COLLECTION", "postfix_logs")
+mongo_auth_collection = os.getenv("MONGO_AUTH_COLLECTION", "auth_logs") # For SSH, etc.
+mongo_httpd_collection = os.getenv("MONGO_HTTPD_COLLECTION", "http_logs")
+
 mongo_whois_collection = os.getenv("MONGO_WHOIS_COLLECTION", "whois_info")
 mongo_geoip_collection = os.getenv("MONGO_GEOIP_COLLECTION", "geoip_info")
 mongo_ipwhois_collection = os.getenv("MONGO_IPWHOIS_COLLECTION", "ipwhois_info")
@@ -69,9 +72,14 @@ client = pymongo.MongoClient(
 db = client[mongo_db]
 
 # MongoDB collections
+# Logging collections
 firewall_collection = db[mongo_fw_collection]
 nginx_collection = db[mongo_nginx_collection]
 postfix_collection = db[mongo_postfix_collection]
+auth_collection = db[mongo_auth_collection]
+httpd_collection = db[mongo_httpd_collection]
+
+# Information collections
 whois_collection = db[mongo_whois_collection]
 geoip_collection = db[mongo_geoip_collection]
 ipwhois_collection = db[mongo_ipwhois_collection]
