@@ -10,6 +10,7 @@ This project provides a generic approach for handling log data from various sour
 - **Pydantic** models for validating and ensuring consistent log structure.
 - **Support for multiple log categories** including firewall logs, NGINX logs, Postfix logs, and more.
 - **WebSocket integration** to send real-time updates to connected clients.
+- **GeoIP lookup** for location info.
 
 ## Setup Instructions
 
@@ -23,8 +24,8 @@ This project provides a generic approach for handling log data from various sour
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/sofagris/IP-Heatmap.git
+   cd IP-Heatmap
 
 2. Install the required dependencies:
     ````bash
