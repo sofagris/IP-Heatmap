@@ -51,6 +51,9 @@ To run the project, follow these steps:
 
 Beyond tracking connection attempts, this method can be applied to visualize customer activity in an e-commerce environment, allowing businesses to see where in the world purchases are being made in real time.
 
+## Screenshots 
+![Main map](./screenshots/map.png)
+
 # Acknowledgments
 
 This project was made with love, and with the invaluable assistance of Chat-GPT and GitHub Copilot.
