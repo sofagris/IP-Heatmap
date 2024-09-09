@@ -19,6 +19,7 @@ This project provides a generic approach for handling log data from various sour
 - **MongoDB**
 - **FastAPI** framework
 - **Pydantic** for data validation
+- **pygelf** for GELF handling
 
 ### Installation
 
@@ -69,6 +70,12 @@ This project introduces a generic /log endpoint that processes logs based on a s
 - Postfix Logs
 - SSH Auth Logs
 - HTTPD Logs
+
+### Support for GELF (Graylog Extended Log Format)
+
+New Listeners for GELF added. Not yet integrated in the project.
+- gelfUDPListener.py
+- gelfTCPListener.py
 
 ### Generic Log Endpoint
 
