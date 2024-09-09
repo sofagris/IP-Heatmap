@@ -13,7 +13,6 @@ logger = logging.getLogger()
 
 HOST = '0.0.0.0'            # Leave empty or 0.0.0.0 to listen on all interfaces
 PORT = 9402                 # Default port for Gelf UDP 12201
-PROTOCOL = 'TCP'            # Change to 'UDP' for Gelf UDP
 
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 if not s:
