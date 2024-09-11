@@ -410,6 +410,42 @@
             height: auto;
         }
 
+        /* Statusindikatorer */
+        .status-indicators {
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 10px;
+            font-size: 18px;
+        }
+
+        .green {
+            color: green;
+        }
+
+        .red {
+            color: red;
+        }
+
+        .badge {
+            background-color: #007bff;
+            border-radius: 50%;
+            padding: 5px 10px;
+            color: white;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+
+        
+        /* Hidden class */
+        .hidden {
+            display: none;
+        }
+
         /* Ionicons styling below */
         /* Rotate animation */
         .rotate {
@@ -471,6 +507,29 @@
             <ion-icon name="analytics-outline"></ion-icon> Stats & Reports
         </button>
         <input type="text" id="search-input" placeholder="Search..." />
+
+        <!-- WebSocket statusindikatorer -->
+        <div class="status-indicators">
+            <span id="ws-connected" class="status-icon green">
+                <ion-icon name="flash-outline"></ion-icon>
+            </span>
+            <span id="ws-disconnected" class="status-icon red hidden">
+                <ion-icon name="flash-off-outline"></ion-icon>
+            </span>
+            <span id="ws-clients" class="status-icon">
+                <ion-icon name="desktop-outline"></ion-icon>
+                <span id="client-count" class="badge">0</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Modal for å vise tilkoblede klienter -->
+    <div id="client-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close" id="close-modal">&times;</span>
+            <h3>Connected Clients</h3>
+            <ul id="client-list"></ul>
+        </div>
     </div>
 
     <!-- Modal for attacker information -->
@@ -616,6 +675,8 @@
 
             ws.onopen = function(event) {
                 console.log('WebSocket connection established at: '+ wsUrl );
+                document.getElementById('ws-connected').classList.remove('hidden');
+                document.getElementById('ws-disconnected').classList.add('hidden');
                 // alert('WebSocket connection established at: '+ wsUrl );
                 /* TODO: Add a visual indicator on opt of the map that the WebSocket connection is active */
             };
@@ -659,6 +720,8 @@
 
             ws.onclose = function(event) {
                 console.log('WebSocket connection closed. Attempting to reconnect...');
+                document.getElementById('ws-connected').classList.add('hidden');
+                document.getElementById('ws-disconnected').classList.remove('hidden');
                 setTimeout(connectWebSocket, 5000); // Forsøk å koble til på nytt etter 5 sekunder
             };
         }
@@ -813,6 +876,20 @@
             }
         }
 
+        // Update number of connected clients
+        async function updateClientCount() {
+            try {
+                const response = await fetch('/api/connections');
+                const clients = await response.json();
+                document.getElementById('client-count').textContent = clients.length;
+            } catch (error) {
+                console.error('Failed to fetch client data:', error);
+            }
+        }
+
+        // Fetch client data every 15 seconds
+        setInterval(updateClientCount, 15000);
+
         // Top 10 Talkers
         async function fetchTopTalkers() {
             try {
@@ -886,6 +963,37 @@
 
 
         connectWebSocket();
+
+        // Håndter visning av tilkoblede klienter
+        document.getElementById('ws-clients').addEventListener('click', function() {
+            fetch('/api/connections')
+                .then(response => response.json())
+                .then(data => {
+                    const clientList = document.getElementById('client-list');
+                    clientList.innerHTML = ''; // Tøm listen før vi legger til nye data
+
+                    data.forEach(client => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `Client IP: ${client['x-forwarded-for']} (Host: ${client.client})`;
+                        clientList.appendChild(listItem);
+                    });
+
+                    // Oppdater antall klienter
+                    clientCount = data.length;
+                    document.getElementById('client-count').textContent = clientCount;
+
+                    // Vis modal
+                    document.getElementById('client-modal').style.display = 'block';
+                })
+                .catch(error => console.error('Error fetching client data:', error));
+        });
+
+        // Lukk modal når brukeren klikker på 'x'-knappen
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('client-modal').style.display = 'none';
+        });
+
+
         let countryLayer;
         const table = document.getElementById('attack-table-container');
         document.addEventListener('DOMContentLoaded', function () {
