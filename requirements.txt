@@ -1,11 +1,13 @@
-fastapi
-requests
-python-dotenv
-cachetools
-python-whois
-ipwhois
-pymongo
-uvicorn
-websockets
-watchdog
-pygelf
+fastapi         # FastAPI framework
+requests        # HTTP requests
+python-dotenv   # Environment variables
+cachetools      # Caching
+python-whois    # Whois
+ipwhois         # IPWhois
+pymongo         # MongoDB driver
+uvicorn         # ASGI server
+websockets      # Websocket support
+watchdog        # File system monitoring
+pygelf          # GELF logging
+asyncio         # Preparing for async listeners for GELF
+pydantic        # Data validation and settings management using python type hints

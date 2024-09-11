@@ -605,8 +605,9 @@
            and use the port number specified in the WebSocket server
         */
         const hostname = window.location.hostname;
-        const port = window.location.port ? window.location.port : '443'; // Use 443 as fallback if port is not specified
-        const wsUrl = `ws://${hostname}:${port}/ws`;
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://'; // Use wss for HTTPS, ws for HTTP
+        const port = window.location.port ? window.location.port : (window.location.protocol === 'https:' ? '443' : '80'); // Use default ports for HTTPS (443) and HTTP (80)
+        const wsUrl = `${protocol}${hostname}:${port}/ws`;
          
         let ws;
 

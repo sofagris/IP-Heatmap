@@ -9,6 +9,7 @@
  
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Request
 from fastapi.responses import FileResponse
+from contextlib import asynccontextmanager
 import requests
 import logging
 import os
@@ -25,7 +26,15 @@ from datetime import datetime, timedelta
 import ipaddress
 from collections import deque
 import pymongo
+import asyncio
+import sys
+# This is the class for handling events from the GELF listeners
+# from eventlistener import EventListener, Listeners
+from listeners.event_listener import Listeners
+from listeners.gelf_udp import udp_listener
 
+# Legg til prosjektets rotmappe til sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 logging.basicConfig(level=logging.INFO)
 
@@ -91,6 +100,7 @@ if mongo_user:
 else:
     client = pymongo.MongoClient(f"mongodb://{mongo_host}:{mongo_port}/")
 
+
 app = FastAPI(
     title="My API with WebSocket Documentation",
     description="""
@@ -105,6 +115,8 @@ app = FastAPI(
     """,
     version="1.0.0"
 )
+
+
 
 # Just to show that the .env file is read correctly
 # This configuration is not valid if uvicorn is run manually. 
@@ -197,6 +209,17 @@ for row in c.fetchall():
     }
 
 print(f"Cache initialized with {len(ip_cache)} entries")
+
+
+# Function that handles GELF data
+def handle_gelf_data(gelf_data):
+    print(f"Handling GELF data: {gelf_data}")
+    # Here you can add custom logic like saving to database or sending WS messages
+
+
+# Register the event handler for GELF_DATA event
+Listeners.on_event("GELF_DATA", handle_gelf_data)
+
 
 # Function for storing WHOIS information in the SQLite database
 # This will be removed in a future version as we are migrating to MongoDB
@@ -358,7 +381,6 @@ def store_connection_info_mongo(
     log_sender=None, log_proxy=None, timestamp=None
 ):
 
-
     # Select collection
     collection = db[mongo_fw_collection]
     if not timestamp:
@@ -476,6 +498,9 @@ async def notify_clients(message):
     for connection in active_connections:
         await connection.send_json(message)
 
+
+
+
 # ----------------- Endpoints -----------------
 
 # Default route to serve the index file
@@ -498,16 +523,27 @@ async def favicon():
 async def serve_static(filename):
     return FileResponse(f"country-flags-main/png100px/{filename}")
 
+
 @app.get("/static/flags/png250px/{filename}")
 async def serve_static(filename):
     return FileResponse(f"country-flags-main/png250px/{filename}")
+
 
 @app.get("/static/flags/png1000px/{filename}")
 async def serve_static(filename):
     return FileResponse(f"country-flags-main/png1000px/{filename}")
 
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    # Retrieve real client IP
+    #x_forwarded_for = websocket.headers.get('x-forwarded-for')
+    #x_forwarded_for = request.headers.get('x-forwarded-for')
+    #if x_forwarded_for:
+    #    client_ip = x_forwarded_for.split(',')[0].strip()
+    #else:
+    #    client_ip = websocket.client.host
+
     await websocket.accept()
     active_connections.append(websocket)
     logging.info('WebSocket connection accepted')
@@ -647,10 +683,17 @@ async def get_whois(query: str):
 
     return whois_info
 
+
 # Endpoint for listing active WebSocket connections
 @app.get("/api/connections")
 async def get_ws_connections():
-    return [str(connection.client) for connection in active_connections]
+    return [
+        {
+            "client": str(connection.client),
+            "x-forwarded-for": connection.headers.get('x-forwarded-for')
+        }
+        for connection in active_connections
+    ]
 
 
 # Endpoint for getting latency metrics
