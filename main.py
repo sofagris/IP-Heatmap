@@ -117,6 +117,7 @@ app = FastAPI(
 )
 
 
+logging.info(f"FastAPI version: {app.version} ({app.summary})")
 
 # Just to show that the .env file is read correctly
 # This configuration is not valid if uvicorn is run manually. 
