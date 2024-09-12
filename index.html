@@ -417,10 +417,9 @@
         }
 
         .status-icon {
-            display: inline-flex;
-            align-items: center;
-            margin-left: 10px;
-            font-size: 18px;
+            display: inline-block;
+            position: relative; /* Make the container relative to position the badge */
+            font-size: 24px; /* Make icon larger for better badge effect */
         }
 
         .green {
@@ -432,12 +431,22 @@
         }
 
         .badge {
-            background-color: #007bff;
-            border-radius: 50%;
-            padding: 5px 10px;
+            position: absolute;
+            top: -5px; /* Adjusts the vertical position */
+            right: -5px; /* Adjusts the horizontal position */
+            background-color: #0b0c0c; /* Bright red for visibility */
+            border-radius: 50%; /* Circular badge */
+            border: 1px solid #fff; /* White border for contrast */
             color: white;
-            font-size: 12px;
-            margin-left: 5px;
+            padding: 2px 2px; /* Padding to adjust size of badge */
+            font-size: 10px; /* Text size inside badge */
+            line-height: 1; /* Ensures the text inside badge is centered */
+            min-width: 10px; /* Minimum width for badge */
+            min-height: 10px; /* Minimum height for badge */
+            text-align: center;
+            vertical-align: middle;
+            font-weight: bold;
+            box-shadow: 0 0 3px rgba(0, 0, 0, 0.3); /* Optional shadow for better contrast */
         }
 
         
@@ -519,7 +528,7 @@
             <span id="ws-clients" class="status-icon">
                 <ion-icon name="desktop-outline"></ion-icon>
                 <span id="client-count" class="badge">0</span>
-            </span>
+            </span>            
         </div>
     </div>
 
@@ -887,8 +896,9 @@
             }
         }
 
-        // Fetch client data every 15 seconds
-        setInterval(updateClientCount, 15000);
+        // Fetch client data every 5 seconds, but do one initial fetch
+        updateClientCount();
+        setInterval(updateClientCount, 5000);
 
         // Top 10 Talkers
         async function fetchTopTalkers() {
