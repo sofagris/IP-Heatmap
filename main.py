@@ -500,10 +500,7 @@ async def notify_clients(message):
         await connection.send_json(message)
 
 
-
-
 # ----------------- Endpoints -----------------
-
 # Default route to serve the index file
 @app.get("/")
 async def serve_index():
@@ -534,6 +531,17 @@ async def serve_static(filename):
 async def serve_static(filename):
     return FileResponse(f"country-flags-main/png1000px/{filename}")
 
+
+# Serve the geojson file
+# This file contains the geometry for all countries in the world
+@app.get("/static/geojson/countries.geojson")
+async def serve_geojson():
+    return FileResponse("geojson/countries.geojson")
+
+
+@app.get("/static/{folder}/{filename}")
+async def serve_static(folder, filename):
+    return FileResponse(f"static/{folder}/{filename}")
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -704,11 +712,7 @@ async def get_metrics():
     return metrics
 
 
-# Serve the geojson file
-# This file contains the geometry for all countries in the world
-@app.get("/static/geojson/countries.geojson")
-async def serve_geojson():
-    return FileResponse("geojson/countries.geojson")
+
 
 # Endpoint for looking up services py port number
 # We import the csv-file with port numbers and services (service-names-port-numbers.csv)
